@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "56146991776",
+    "project_id": "shop-af22d",
+    "storage_bucket": "shop-af22d.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:56146991776:android:7df30683f63e6d3ec987c5",
+        "android_client_info": {
+          "package_name": "com.jessy.shop"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "56146991776-3gu0m7mudrnsim385u368cdqtka96d82.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDKmmTdqmHcFkWg80nRkzT1djOiUpilIqU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "56146991776-3gu0m7mudrnsim385u368cdqtka96d82.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
