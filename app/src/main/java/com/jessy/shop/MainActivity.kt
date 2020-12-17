@@ -1,6 +1,9 @@
 package com.jessy.shop
 
+import android.content.BroadcastReceiver
+import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.os.Bundle
 import android.util.Log
 import com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -20,12 +23,17 @@ import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import kotlinx.android.synthetic.main.content_main.*
 import kotlinx.android.synthetic.main.row_function.view.*
+import org.jetbrains.anko.*
+import java.net.URL
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), AnkoLogger {
     private val TAG = MainActivity::class.java.simpleName
     val auth = FirebaseAuth.getInstance()
+    var cacheService:Intent? = null
     private val RC_NICKNAME: Int = 210
     private val RC_SIGNUP: Int = 200
     var signup = false
@@ -99,7 +107,9 @@ class MainActivity : AppCompatActivity() {
         when(position){
             0 -> startActivity(Intent(this, ContactActivity::class.java))
             2 -> startActivity(Intent(this, ParkingActivity::class.java))
+            4 -> startActivity(Intent(this, NewsActivity::class.java))
             5 -> startActivity(Intent(this, MovieActivity::class.java))
+            6 -> startActivity(Intent(this, MapsActivity::class.java))
         }
     }
 
@@ -154,13 +164,52 @@ class MainActivity : AppCompatActivity() {
         return true
     }
 
+    val broadcastReceiver = object : BroadcastReceiver() {
+        override fun onReceive(p0: Context?, intent: Intent?) {
+            if (intent?.action.equals(CacheService.ACTION_CACHE_DONE)) {
+//                toast("MainActivity cache informed")
+                info("MainActivity cache informed")
+            }
+        }
+    }
+
+
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         return when (item.itemId) {
             R.id.action_settings -> true
+            R.id.action_cache -> {
+                doAsync {
+                    val json = URL("https://gist.githubusercontent.com/hanktom/8557ebb6a1acf53b78ea210e31f2ba28/raw/d138132ee04597cc99ccbd05709d6cdbe5952543/movies.json").readText()
+                    val movies = Gson().fromJson<List<MovieItem>>(json,
+                        object : TypeToken<List<MovieItem>>(){}.type)
+//                    val movie = movies.get(0)
+                    movies.forEach {
+                        startService(intentFor<CacheService>(
+                            "TITLE" to it.Title,
+                            "URL" to it.Poster
+                        ))
+                    }
+
+                }
+
+                true
+            }
             else -> super.onOptionsItemSelected(item)
         }
+    }
+
+    override fun onStart() {
+        super.onStart()
+        val filter = IntentFilter(CacheService.ACTION_CACHE_DONE)
+        registerReceiver(broadcastReceiver, filter)
+    }
+
+    override fun onStop() {
+        super.onStop()
+//        stopService(cacheService)
+        unregisterReceiver(broadcastReceiver)
     }
 }

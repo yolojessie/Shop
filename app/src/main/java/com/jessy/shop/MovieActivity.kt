@@ -19,18 +19,28 @@ import org.jetbrains.anko.AnkoLogger
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.info
 import org.jetbrains.anko.uiThread
+import retrofit2.Call
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
+import retrofit2.create
+import retrofit2.http.GET
 import java.net.URL
 
 class MovieActivity : AppCompatActivity() , AnkoLogger{
     private val TAG  = MovieActivity::class.java.simpleName
     var movies:List<MovieItem>? = null
+    val retrofit = Retrofit.Builder()
+        .baseUrl("https://gist.githubusercontent.com/hanktom/8557ebb6a1acf53b78ea210e31f2ba28/raw/d138132ee04597cc99ccbd05709d6cdbe5952543/")
+        .addConverterFactory(GsonConverterFactory.create())
+        .build()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_movie)
         doAsync {
-            val json = URL("https://gist.githubusercontent.com/saniyusuf/406b843afdfb9c6a86e25753fe2761f4/raw/523c324c7fcc36efab8224f9ebb7556c09b69a14/Film.JSON").readText()
-            movies = Gson().fromJson<List<MovieItem>>(json,
-            object : TypeToken<List<MovieItem>>(){}.type)
+            val movieService = retrofit.create(MovieService::class.java)
+            movies = movieService.listMovies()
+                .execute()
+                .body()
             movies?.forEach {
                 info("${it.Title} ${it.imdbRating}")
             }
@@ -106,3 +116,8 @@ data class MovieItem(
     val imdbVotes: String,
     val totalSeasons: String
 )
+
+interface MovieService {
+    @GET("movies.json")
+    fun listMovies(): Call<List<MovieItem>>
+}
